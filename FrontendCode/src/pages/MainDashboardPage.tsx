@@ -17,11 +17,6 @@ function MainDashboardPage() {
     { id: 4, vehicle: 'TATA-PRIMA-9908', driver: 'Harvey Specter', status: 'RETIRED' },
   ];
 
-  const {fleetUtilization} = apiStore()
-
-  useEffect(() => {
-    fleetUtilization()
-  }, [fleetUtilization])
 
   const getStatusConfig = (status: any) => {
     switch (status) {

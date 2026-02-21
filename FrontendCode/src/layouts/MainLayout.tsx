@@ -1,6 +1,6 @@
 import React from 'react';
 import { Outlet } from 'react-router-dom';
-import Navbar from '../components/Navbar';
+import Header from '../components/Header';
 import Sidebar from '../components/Sidebar';
 
 function MainLayout() {
@@ -11,7 +11,7 @@ function MainLayout() {
       
       <div className="drawer-content flex flex-col">
         {/* Navbar stays at the top of the content */}
-        <Navbar />
+        <Header />
         
         {/* Main page content goes here */}
         <main className="flex-grow p-6 bg-base-200 min-h-screen">

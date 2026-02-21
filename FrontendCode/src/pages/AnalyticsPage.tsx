@@ -1,4 +1,9 @@
 import React from 'react';
+import {
+  LineChart, Line, BarChart, Bar,
+  XAxis, YAxis, CartesianGrid, Tooltip,
+  ResponsiveContainer, Legend
+} from 'recharts';
 
 function AnalyticsPage() {
 
@@ -21,21 +26,23 @@ function AnalyticsPage() {
 
   const summaryData = [
     { month: 'Jan', revenue: 'Rs. 17L', fuel: 'Rs. 6L', maintenance: 'Rs. 2L', profit: 'Rs. 9L' },
+    { month: 'Feb', revenue: 'Rs. 14L', fuel: 'Rs. 6L', maintenance: 'Rs. 2L', profit: 'Rs. 10L' },
+    { month: 'Mar', revenue: 'Rs. 13L', fuel: 'Rs. 6L', maintenance: 'Rs. 2L', profit: 'Rs. 9L' },
   ];
 
   return (
     <div className="min-h-screen bg-base-200 p-6 font-sans">
-      
+
       {/* Top Metric Cards - Green borders from sketch */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         {[
-          { label: 'Total Fuel Cost', val: 'Rs. 2.6 L', color: 'text-emerald-600' },
-          { label: 'Fleet ROI', val: '+ 12.5%', color: 'text-emerald-600' },
-          { label: 'Utilization Rate', val: '82%', color: 'text-emerald-600' }
+          { label: 'Total Fuel Cost', val: 'Rs. 2.6 L', color: 'text-primary' },
+          { label: 'Fleet ROI', val: '+ 12.5%', color: 'text-primary' },
+          { label: 'Utilization Rate', val: '82%', color: 'text-primary' }
         ].map((stat, i) => (
-          <div key={i} className="card bg-base-100 border-2 border-emerald-500 shadow-sm p-6 items-center">
+          <div key={i} className="card border-2 border-primary shadow-sm p-6 items-center">
             <div className={`text-xl font-bold mb-2 ${stat.color}`}>{stat.label}</div>
-            <div className="text-3xl font-black">{stat.val}</div>
+            <div className="text-3xl font-semibold">{stat.val}</div>
           </div>
         ))}
       </div>
@@ -46,16 +53,30 @@ function AnalyticsPage() {
         <div className="card bg-base-100 shadow-xl p-4 border border-base-300">
           <h3 className="text-center font-bold text-lg mb-4">Fuel Efficiency Trend (kmL)</h3>
           <div className="h-64 w-full">
-            {/* <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height="100%">
               <LineChart data={fuelData}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} />
                 <XAxis dataKey="name" />
                 <YAxis />
                 <Tooltip />
-                <Line type="monotone" dataKey="actual" stroke="#1e293b" strokeWidth={3} dot={{ r: 6 }} />
-                <Line type="monotone" dataKey="trend" stroke="#94a3b8" strokeDasharray="5 5" />
+                <Legend />
+                <Line
+                  type="monotone"
+                  dataKey="actual"
+                  stroke="#1e293b"
+                  strokeWidth={3}
+                  dot={{ r: 6 }}
+                  name="Actual"
+                />
+                <Line
+                  type="monotone"
+                  dataKey="trend"
+                  stroke="#94a3b8"
+                  strokeDasharray="5 5"
+                  name="Trend"
+                />
               </LineChart>
-            </ResponsiveContainer> */}
+            </ResponsiveContainer>
           </div>
         </div>
 
@@ -63,56 +84,88 @@ function AnalyticsPage() {
         <div className="card bg-base-100 shadow-xl p-4 border border-base-300">
           <h3 className="text-center font-bold text-lg mb-4">Top 5 Costliest Vehicles</h3>
           <div className="h-64 w-full">
-            {/* <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height="100%">
               <BarChart data={costData}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} />
                 <XAxis dataKey="name" />
                 <YAxis />
-                <Tooltip cursor={{fill: 'transparent'}} />
-                <Bar dataKey="cost" fill="#334155" radius={[4, 4, 0, 0]} barSize={40} />
+                <Tooltip cursor={{ fill: "transparent" }} />
+                <Bar
+                  dataKey="cost"
+                  fill="#334155"
+                  radius={[4, 4, 0, 0]}
+                  barSize={40}
+                  name="Cost"
+                />
               </BarChart>
-            </ResponsiveContainer> */}
+            </ResponsiveContainer>
           </div>
         </div>
       </div>
 
       {/* Financial Summary Table */}
       <div className="flex justify-center mb-4">
-        <div className="badge badge-outline badge-primary border-2 p-4 font-bold text-lg rounded-lg">
+        <div className="badge badge-primary border-2 p-4 font-bold text-lg rounded-lg">
           Financial Summary of Month
         </div>
       </div>
 
       <div className="card bg-base-100 shadow-xl border border-base-300 overflow-hidden">
-        <table className="table w-full">
-          <thead className="text-rose-600 bg-base-200/50">
-            <tr className="text-lg">
-              <th className="py-4">Month</th>
+        <table className="table w-full py-2">
+
+          <thead className="text-primary [&>tr>th]:pl-4">
+            <tr>
+              <th>Month</th>
               <th>Revenue</th>
               <th>Fuel Cost</th>
               <th>Maintenance</th>
               <th>Net Profit</th>
             </tr>
           </thead>
-          <tbody className="text-lg">
+
+          <tbody className="[&>tr>th]:pl-4 [&>tr>td]:pl-4">
+
             {summaryData.map((row, i) => (
-              <tr key={i} className="border-b border-base-200 font-medium">
-                <td>{row.month}</td>
-                <td>{row.revenue}</td>
-                <td>{row.fuel}</td>
-                <td>{row.maintenance}</td>
-                <td className="text-blue-600 font-bold">{row.profit}</td>
-              </tr>
-            ))}
-            {/* Visual spacer dots from sketch */}
-            {[...Array(5)].map((_, i) => (
-              <tr key={i} className="opacity-20 border-none">
-                <td colSpan={5} className="py-2">
-                  <div className="h-1.5 w-1.5 bg-current rounded-full ml-4"></div>
+              <tr key={i} className="hover">
+
+                {/* Month */}
+                <th className="font-semibold text-base-content">
+                  {row.month}
+                </th>
+
+                {/* Revenue */}
+                <td>
+                  <div className="font-mono font-bold text-sm text-primary">
+                    {row.revenue}
+                  </div>
                 </td>
+
+                {/* Fuel */}
+                <td>
+                  <div className="font-mono font-bold text-sm text-primary">
+                    {row.fuel}
+                  </div>
+                </td>
+
+                {/* Maintenance */}
+                <td>
+                  <div className="font-mono font-bold text-sm text-primary">
+                    {row.maintenance}
+                  </div>
+                </td>
+
+                {/* Profit */}
+                <td>
+                  <div className="badge badge-primary gap-2 py-4 px-4 font-bold text-xs uppercase tracking-wide rounded-md">
+                    {row.profit}
+                  </div>
+                </td>
+
               </tr>
             ))}
+
           </tbody>
+
         </table>
       </div>
     </div>

@@ -20,7 +20,7 @@ function Header() {
   };
 
   return (
-    <nav className="navbar w-full sticky top-0 z-2 backdrop-blur bg-base-100/90">
+    <nav className="navbar w-full sticky top-0 z-2 backdrop-blur bg-base-100/90 border-b-[1px] border-b-[#1a365d] min-h-[calc(theme(spacing.16)+4px)]">
       <label
         htmlFor="my-drawer-4"
         aria-label="open sidebar"

@@ -5,8 +5,10 @@ const ProtectedRoute = () => {
   const { token } = useAuthStore();
   const location = useLocation();
 
+  const storageToken = localStorage.getItem("token");
+
   // If there's no token, redirect to login but save the current location
-  if (!token) {
+  if (!token && !storageToken) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 

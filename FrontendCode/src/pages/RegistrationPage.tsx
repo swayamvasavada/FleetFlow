@@ -9,18 +9,19 @@ interface IFormInput {
   phone: string;
   password: string;
   role: string;
+  licenseNumber?: string; // New field
+  licenseExpiryDate?: string; // New field
 }
 
 const RegistrationPage: React.FC = () => {
   const navigate = useNavigate();
-
-  // 1. Pull actions and state from your Zustand store
   const { signup, isLoading, error: apiError, resetError } = useAuthStore();
 
   const {
     register,
     handleSubmit,
     reset,
+    watch, // Add watch here
     formState: { errors },
   } = useForm<IFormInput>({
     defaultValues: {
@@ -29,18 +30,16 @@ const RegistrationPage: React.FC = () => {
       phone: "",
       password: "",
       role: "",
+      licenseNumber: "",
+      licenseExpiryDate: "",
     },
   });
 
-  useEffect(() => {
-    return () => {
-      if (resetError) resetError();
-    };
-  }, [resetError]);
+  // Watch the role field to show/hide driver fields
+  const selectedRole = watch("role");
 
-  // 2. Map form data to your API body requirements
   const onSubmit: SubmitHandler<IFormInput> = async (data) => {
-    const payload = {
+    const payload: any = {
       email: data.email,
       name: data.fullName,
       phoneNo: Number(data.phone),
@@ -48,17 +47,21 @@ const RegistrationPage: React.FC = () => {
       role: `ROLE_${data.role.toUpperCase()}`,
     };
 
-    // 3. Execute signup and clear error/reset form on success
+    // If driver, add the specific driver fields to the payload
+    if (data.role === "DRIVER") {
+      payload.licenseNumber = data.licenseNumber;
+      payload.licenseExpiryDate = data.licenseExpiryDate;
+    }
+
     const success: any = await signup(payload);
-    
     if (success) {
-      if (resetError) resetError(); // Clear any existing error
-      reset(); // Clear the form fields
-      navigate("/login"); // Redirect the user
+      if (resetError) resetError();
+      reset();
+      navigate("/login");
     }
   };
 
-  // ... fields array remains the same ...
+  // Base fields
   const fields: any[] = [
     {
       id: "fullName",
@@ -97,6 +100,26 @@ const RegistrationPage: React.FC = () => {
       validation: { required: "Role is required" },
     },
   ];
+
+  // Dynamically inject Driver fields if role is DRIVER
+  if (selectedRole === "DRIVER") {
+    fields.push(
+      {
+        id: "licenseNumber",
+        label: "License Number",
+        type: "text",
+        placeholder: "ABC123456789",
+        validation: { required: "License number is required" },
+      },
+      {
+        id: "licenseExpiryDate",
+        label: "License Expiry Date",
+        type: "date", // Sets the input type to date picker
+        placeholder: "",
+        validation: { required: "Expiry date is required" },
+      },
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-base-200 p-4">

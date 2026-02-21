@@ -20,6 +20,7 @@ import com.FleetFlow.exception.ResourceNotFoundExcepiton;
 import com.FleetFlow.service.AuthService;
 import com.FleetFlow.util.EmailUtil;
 import com.FleetFlow.util.JwtUtil;
+import com.FleetFlow.util.Role;
 
 @Service
 public class AuthServiceImpl implements AuthService {
@@ -54,9 +55,15 @@ public class AuthServiceImpl implements AuthService {
         user.setPassword(passwordEncoder.encode(signupDTO.getPassword()));
         user.setIsVerified(false);
         user.setActive(true);
+        user.setIsAvailable(true);
         user.setCreatedAt(new Date());
+        
+        if (signupDTO.getRole() == Role.ROLE_DRIVER) {
+            user.setLicenseNo(signupDTO.getLicenseNo());
+            user.setLicenseExpiryDate(signupDTO.getLicenseExpiryDate());
+        }
+        
         userDAO.save(user);
-
         sendVerificationMail(signupDTO.getEmail());
 
         return signupDTO;
@@ -98,6 +105,7 @@ public class AuthServiceImpl implements AuthService {
         String token = jwtUtil.generateToken(user.getEmail(), Long.valueOf(24 * 60 * 60 * 1000));
         loginDTO.setPassword(null);
         loginDTO.setName(user.getName());
+        loginDTO.setRole(user.getRole().name());
         loginDTO.setToken(token);
         loginDTO.setIsVerified(true);
         return loginDTO;
@@ -114,10 +122,22 @@ public class AuthServiceImpl implements AuthService {
             user.setIsVerified(true);
             userDAO.save(user);
         }
-        
+
         LoginDTO loginDTO = new LoginDTO();
+        String authToken = jwtUtil.generateToken(user.getEmail(), Long.valueOf(24 * 60 * 60 * 1000));
         BeanUtils.copyProperties(user, loginDTO);
         loginDTO.setPassword(null);
+        loginDTO.setToken(authToken);
         return loginDTO;
+    }
+
+    @Override
+    public void updateDriverAvailability(String email, boolean isAvailable) throws Exception {
+        User user = userDAO.findByEmailAndActive(email, true);
+        if (user == null)
+            throw new ResourceNotFoundExcepiton("User not found with given email");
+
+        user.setIsAvailable(isAvailable);
+        userDAO.save(user);
     }
 }

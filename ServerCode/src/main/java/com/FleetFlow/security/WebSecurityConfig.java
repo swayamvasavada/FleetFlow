@@ -23,7 +23,9 @@ public class WebSecurityConfig {
                                 .authorizeHttpRequests(
                                                 auth -> auth.requestMatchers("/api/auth/**").permitAll()
                                                                 .requestMatchers("/api/vehicle/**")
-                                                                .hasAnyRole("MANAGER", "DISPATCHER"))
+                                                                .hasAnyRole("MANAGER", "DISPATCHER")
+                                                                .requestMatchers("/api/analytics/**")
+                                                                .hasRole("MANAGER"))
                                 .addFilterBefore(authFilter, UsernamePasswordAuthenticationFilter.class).build();
         }
 }

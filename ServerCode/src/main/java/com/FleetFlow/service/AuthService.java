@@ -11,4 +11,6 @@ public interface AuthService {
     LoginDTO login(LoginDTO loginDTO) throws Exception;
 
     LoginDTO verifyUser(String token) throws Exception;
+
+    void updateDriverAvailability(String email, boolean isAvailable) throws Exception;
 }

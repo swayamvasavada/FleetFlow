@@ -54,6 +54,15 @@ public class User implements UserDetails {
     @Column(name = "IsVerified")
     private Boolean isVerified;
 
+    @Column(name = "IsAvailable")
+    private Boolean isAvailable;
+
+    @Column(name = "LicenseNo")
+    private String licenseNo;
+
+    @Column(name = "LicenseExpiryDate")
+    private Date licenseExpiryDate;
+
     @Column(name = "Active")
     private Boolean active;
 

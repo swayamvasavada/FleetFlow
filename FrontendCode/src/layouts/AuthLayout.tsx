@@ -1,11 +1,18 @@
-import React from 'react'
+import { Navigate, Outlet, useLocation } from "react-router-dom";
+import { useAuthStore } from "../store/authStore";
 
-function AuthLayout() {
-  return (
-    <div>
-      
-    </div>
-  )
-}
+const ProtectedRoute = () => {
+  const { token } = useAuthStore();
+  const location = useLocation();
 
-export default AuthLayout
+  const storageToken = localStorage.getItem("token");
+
+  // If there's no token, redirect to login but save the current location
+  if (!token && !storageToken) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  return <Outlet />;
+};
+
+export default ProtectedRoute;

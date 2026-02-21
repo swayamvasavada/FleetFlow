@@ -1,5 +1,6 @@
 import React from 'react';
 import { useForm, type SubmitHandler } from 'react-hook-form';
+import { useNavigate } from 'react-router-dom';
 
 interface ILoginInput {
   email: string;
@@ -8,6 +9,9 @@ interface ILoginInput {
 }
 
 const LoginPage: React.FC = () => {
+
+  const navigate = useNavigate();
+
   const {
     register,
     handleSubmit,
@@ -25,7 +29,7 @@ const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-base-200 p-4 font-['Sora']">
+    <div className="min-h-screen flex items-center justify-center bg-base-200 p-4">
       <div className="card w-full max-w-md bg-base-100 shadow-2xl overflow-visible relative">
 
         <div className="card-body pt-12">
@@ -87,7 +91,7 @@ const LoginPage: React.FC = () => {
 
           <p className="text-sm text-center">
             Don't have an account?
-            <button className="link link-primary no-underline hover:underline ml-1 font-semibold">Sign up</button>
+            <button className="link link-primary no-underline hover:underline ml-1 font-semibold" onClick={() => navigate('/sign-up')}>Sign up</button>
           </p>
         </div>
       </div>

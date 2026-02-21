@@ -2,8 +2,12 @@ import { MdSearch, MdFilterList, MdAdd } from 'react-icons/md';
 import { HiOutlineSortAscending, HiOutlineViewGrid } from 'react-icons/hi';
 import { useEffect } from 'react';
 import { apiStore } from '../store/apiStore';
+import { useNavigate } from "react-router-dom";
 
 function MainDashboardPage() {
+
+  const navigate = useNavigate();
+
   const stats = [
     { label: 'Active Fleet', value: 220, badge: 'badge-success', textColor: 'text-success' },
     { label: 'Maintenance Alert', value: 180, badge: 'badge-warning', textColor: 'text-warning' },
@@ -59,10 +63,10 @@ function MainDashboardPage() {
 
       {/* Action Buttons */}
       <div className="flex justify-end gap-3 mb-6">
-        <button className="btn btn-primary gap-2 text-white">
+        <button className="btn btn-primary gap-2 text-white" onClick={() => navigate("/trips")}>
           <MdAdd size={20} /> New Trip
         </button>
-        <button className="btn btn-primary gap-2 text-white">
+        <button className="btn btn-primary gap-2 text-white" onClick={() => navigate("/vehicles")}>
           <MdAdd size={20} /> New Vehicle
         </button>
       </div>
@@ -109,7 +113,13 @@ function MainDashboardPage() {
                       </div>
                     </td>
                     <th>
-                      <button className="btn btn-ghost btn-xs">Details</button>
+                      <button className="btn btn-outline btn-primary btn-sm mr-2">
+                        Edit
+                      </button>
+
+                      <button className="btn btn-error btn-sm">
+                        Delete
+                      </button>
                     </th>
                   </tr>
                 );

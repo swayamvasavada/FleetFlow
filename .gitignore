@@ -1,0 +1,41 @@
+####################################
+# ===== ServerCode (Maven) =====
+####################################
+
+# Maven build output
+ServerCode/target/
+
+# Logs
+ServerCode/*.log
+ServerCode/logs/
+
+# Runtime files
+ServerCode/*.pid
+ServerCode/*.seed
+ServerCode/*.pid.lock
+
+# Ignore local profile (contains secrets)
+ServerCode/src/main/resources/application-dev.properties
+
+####################################
+# ===== IDE =====
+####################################
+
+# IntelliJ
+.idea/
+*.iml
+
+# VS Code
+.vscode/
+
+# Eclipse / STS
+.classpath
+.project
+.settings/
+
+####################################
+# ===== OS =====
+####################################
+
+.DS_Store
+Thumbs.db

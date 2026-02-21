@@ -78,7 +78,7 @@ public class AuthController {
 
     @PostMapping(value = "/login")
     public ResponseEntity<ResponseDTO> login(@RequestBody LoginDTO loginDTO) {
-        System.out.println("Entering into AuthController -> verifyEmail");
+        System.out.println("Entering into AuthController -> login");
 
         ResponseDTO responseDTO = new ResponseDTO();
 

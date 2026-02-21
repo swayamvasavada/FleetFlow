@@ -8,4 +8,6 @@ import com.FleetFlow.entity.User;
 @Repository
 public interface UserDAO extends JpaRepository<User, Long> {
     User findByEmailAndActive(String email, Boolean active);
+
+    boolean existsByEmail(String email);
 }

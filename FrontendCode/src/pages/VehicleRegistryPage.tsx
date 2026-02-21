@@ -2,16 +2,26 @@ import React, { useEffect, useState } from 'react';
 import { MdSearch, MdFilterList, MdAdd, MdClose } from 'react-icons/md';
 import { HiOutlineSortAscending, HiOutlineViewGrid } from 'react-icons/hi';
 import { useForm } from 'react-hook-form';
+import { apiStore } from '../store/apiStore'
 
 interface VehicleFormData {
   licensePlate: string;
-  maxPayload: number;
-  odometer: number;
-  type: string;
+  maxLoadCapacity: number;
+  odometerReading: number;
+  vehicleType: string;
   model: string;
+  vehicleId: number;
+  VehicleStatus: string;
+  isRetired: boolean
 }
 
 function VehicleRegistryPage() {
+
+  const { vehicles, loading, error, fetchAllVehicles } = apiStore();
+
+  useEffect(() => {
+    fetchAllVehicles();
+  }, [fetchAllVehicles]);
 
   const [openModal, setOpenModal] = useState(false);
 
@@ -38,14 +48,8 @@ function VehicleRegistryPage() {
     setOpenModal(false);
   };
 
-  // Data points taken directly from your sketch
-  const vehicles = [
-    { no: 1, plate: 'MH 00', model: '2017', type: 'Mini', capacity: '5 tonn', odometer: '79000', status: 'Idle' },
-    { no: 2, plate: 'KA 01', model: '8900', type: 'Truck', capacity: '15 trip', odometer: '32000 km', status: 'On Trip' },
-    { no: 3, plate: 'Spreinter', model: 'Truck', type: 'Truck', capacity: 'On Trip', odometer: '151000 km', status: 'Idle' },
-    { no: 4, plate: 'DL 05', model: '4567', type: 'Truck', capacity: '15 tonn', odometer: 'badge', status: 'Idle' },
-    { no: 5, plate: 'MegaMover', model: 'Van', type: 'Van', capacity: '10 tonn', odometer: 'badge', status: 'On Trip' },
-  ];
+  if (loading) return <div className="p-10 text-center text-xl font-bold">Loading vehicles...</div>;
+  if (error) return <div className="p-10 text-center text-red-500">Error: {error}</div>;
 
   const labelStyle = "label text-primary text-sm mb-2 font-semibold";
   const inputBase = "input input-bordered w-full bg-base-100";
@@ -92,8 +96,7 @@ function VehicleRegistryPage() {
             {/* table head - used rose color from your sketch markers */}
             <thead className="text-primary">
               <tr className="text-sm uppercase tracking-wider">
-                <th>NO.</th>
-                <th>Plate</th>
+                <th>License Plate</th>
                 <th>Model</th>
                 <th>Type</th>
                 <th>Capacity</th>
@@ -104,20 +107,31 @@ function VehicleRegistryPage() {
             </thead>
             <tbody className="text-base-content">
               {vehicles.map((vehicle) => (
-                <tr key={vehicle.no} className="hover transition-colors border-b border-base-200">
-                  <th className="font-bold">{vehicle.no}</th>
-                  <td className="font-semibold">{vehicle.plate}</td>
+                <tr key={vehicle.licensePlate} className="hover:bg-gray-50">
+                  <td className="font-semibold">{vehicle.licensePlate}</td>
+
                   <td>{vehicle.model}</td>
-                  <td>{vehicle.type}</td>
-                  <td>{vehicle.capacity}</td>
-                  <td className="text-sm">{vehicle.odometer}</td>
+
+                  <td>{vehicle.vehicleType}</td>
+
+                  <td>{vehicle.maxLoadCapacity}</td>
+
+                  <td className="text-sm">{vehicle.odometerReading}</td>
+
                   <td>
-                    <div className={`badge badge-md gap-2 p-3 font-bold border-none ${vehicle.status === 'Idle' ? 'bg-emerald-500 text-white' :
-                      vehicle.status === 'On Trip' ? 'bg-amber-500 text-white' : 'bg-slate-400 text-white'
-                      }`}>
-                      {vehicle.status}
-                    </div>
+                    <span
+                      className={`badge badge-md p-3 font-bold text-white
+            ${vehicle.VehicleStatus === "Idle"
+                          ? "bg-emerald-500"
+                          : vehicle.VehicleStatus === "On Trip"
+                            ? "bg-amber-500"
+                            : "bg-slate-400"
+                        }`}
+                    >
+                      {vehicle.VehicleStatus}
+                    </span>
                   </td>
+
                   <td className="text-center">
                     <button className="btn btn-ghost btn-xs text-orange-500 hover:bg-orange-50">
                       <MdClose size={20} />
@@ -157,13 +171,13 @@ function VehicleRegistryPage() {
               <input
                 type="number"
                 placeholder="Enter payload"
-                className={`${inputBase} ${errors.maxPayload && "input-error"}`}
-                {...register("maxPayload", {
+                className={`${inputBase} ${errors.maxLoadCapacity && "input-error"}`}
+                {...register("maxLoadCapacity", {
                   required: "Max payload is required",
                   min: { value: 1, message: "Payload must be positive" }
                 })}
               />
-              {errors.maxPayload && <span className={errorText}>{errors.maxPayload.message}</span>}
+              {errors.maxLoadCapacity && <span className={errorText}>{errors.maxLoadCapacity.message}</span>}
             </div>
 
             {/* Initial Odometer */}
@@ -172,28 +186,28 @@ function VehicleRegistryPage() {
               <input
                 type="number"
                 placeholder="Enter reading"
-                className={`${inputBase} ${errors.odometer && "input-error"}`}
-                {...register("odometer", {
+                className={`${inputBase} ${errors.odometerReading && "input-error"}`}
+                {...register("odometerReading", {
                   required: "Odometer is required",
                   min: { value: 0, message: "Cannot be negative" }
                 })}
               />
-              {errors.odometer && <span className={errorText}>{errors.odometer.message}</span>}
+              {errors.odometerReading && <span className={errorText}>{errors.odometerReading.message}</span>}
             </div>
 
             {/* Type */}
             <div className="form-control">
               <label className={labelStyle}>Vehicle Type</label>
               <select
-                {...register("type", { required: "Type is required" })}
-                className={`${selectBase} ${errors.type && "select-error"}`}
+                {...register("vehicleType", { required: "Type is required" })}
+                className={`${selectBase} ${errors.vehicleType && "select-error"}`}
               >
                 <option value="">Select type</option>
                 <option>Truck</option>
                 <option>Van</option>
                 <option>Trailer</option>
               </select>
-              {errors.type && <span className={errorText}>{errors.type.message}</span>}
+              {errors.vehicleType && <span className={errorText}>{errors.vehicleType.message}</span>}
             </div>
 
             {/* Model */}

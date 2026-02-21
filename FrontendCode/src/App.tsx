@@ -33,9 +33,9 @@ const router = createBrowserRouter([
   },
 
   // App routes (WITH layout)
-  {
-    element: <ProtectedRoute />, // 1. Check Auth first
-    children: [
+  // {
+    // element: <ProtectedRoute />, // 1. Check Auth first
+    // children: [
       {
         path: "/",
         element: <MainLayout />, // 2. Then Wrap in Layout
@@ -49,8 +49,8 @@ const router = createBrowserRouter([
           { path: "drivers", element: <DriverManagementPage /> },
         ],
       },
-    ],
-  },
+    // ],
+  // },
 ]);
 
 function App() {

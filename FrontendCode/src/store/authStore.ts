@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { sign_up, verify } from "../constants/apiPath";
+import { login as loginPath, sign_up, verify } from "../constants/apiPath"; // Renamed to avoid shadowing
 import { api } from "../utils/axiosConfig";
 
 interface User {
@@ -7,6 +7,8 @@ interface User {
   name: string;
   phoneNo: number;
   role: string;
+  licenseNumber?: string;
+  licenseExpiryDate?: string;
 }
 
 interface AuthState {
@@ -14,7 +16,8 @@ interface AuthState {
   token: string | null;
   isLoading: boolean;
   error: string | null;
-  signup: (userData: any) => Promise<void>;
+  signup: (userData: any) => Promise<boolean>;
+  login: (credentials: any) => Promise<boolean>;
   logout: () => void;
   isVerified: boolean;
   verifyAccount: (verificationToken: string) => Promise<void>;
@@ -22,51 +25,49 @@ interface AuthState {
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
-  user: null,
-  token: null,
+  // Initialize state from localStorage so name stays on refresh
+  user: JSON.parse(localStorage.getItem("user") || "null"),
+  token: localStorage.getItem("token") || null,
   isLoading: false,
   error: null,
   isVerified: false,
 
   signup: async (userData) => {
     set({ isLoading: true, error: null });
-
     try {
-      // Axios automatically stringifies the body
       const response = await api.post(sign_up, userData);
+      
+      // Accessing serviceResult based on your API response logs
+      const { serviceResult } = response.data;
+      const { token, ...user } = serviceResult;
 
-      // Axios puts the response body in the .data property
-      const { user, token } = response.data;
+      if (token) {
+        localStorage.setItem("token", token);
+        localStorage.setItem("user", JSON.stringify(user));
+      }
 
-      console.log(userData);
-      console.log(response.data);
-
-      set({
-        user,
-        token,
-        isLoading: false,
-      });
+      set({ user, token, isLoading: false });
+      return true;
     } catch (err: any) {
-      // Axios errors contain the server message in err.response.data
-      const errorMessage =
-        err.response?.data?.message || "An unexpected error occurred";
+      const errorMessage = err.response?.data?.message || "Registration failed";
       set({ error: errorMessage, isLoading: false });
+      return false;
     }
   },
 
-  // inside authStore.ts
   verifyAccount: async (verificationToken: string) => {
     set({ isLoading: true, error: null });
     try {
       const response = await api.post(`${verify}?token=${verificationToken}`);
+      const { serviceResult } = response.data;
+      const { token, ...user } = serviceResult;
 
-      const { user, token } = response.data;
+      if (token) {
+        localStorage.setItem("token", token);
+        localStorage.setItem("user", JSON.stringify(user));
+      }
 
-      set({
-        user,
-        token, 
-        isLoading: false,
-      });
+      set({ user, token, isLoading: false, isVerified: true });
     } catch (err: any) {
       const errorMessage = err.response?.data?.message || "Verification failed";
       set({ error: errorMessage, isLoading: false });
@@ -74,7 +75,40 @@ export const useAuthStore = create<AuthState>((set) => ({
     }
   },
 
-  logout: () => set({ user: null, token: null }),
+  login: async (credentials: any) => {
+    set({ isLoading: true, error: null });
+    try {
+      const response = await api.post(loginPath, credentials);
+      
+      // FIX: Extract from serviceResult as per your console logs
+      const { serviceResult } = response.data;
+      
+      if (serviceResult) {
+        const { token, ...userData } = serviceResult;
 
-  resetError: () => set({ error: null })
+        localStorage.setItem("token", token);
+        localStorage.setItem("user", JSON.stringify(userData));
+
+        set({
+          user: userData,
+          token: token,
+          isLoading: false,
+        });
+        return true;
+      }
+      return false;
+    } catch (err: any) {
+      const errorMessage = err.response?.data?.message || "Login failed";
+      set({ error: errorMessage, isLoading: false });
+      return false;
+    }
+  },
+
+  logout: () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user"); // Clear user too
+    set({ user: null, token: null, isVerified: false });
+  },
+
+  resetError: () => set({ error: null }),
 }));

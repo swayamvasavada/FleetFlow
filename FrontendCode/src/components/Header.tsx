@@ -1,12 +1,16 @@
 import React from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { MdLogout, MdPerson, MdSettings } from "react-icons/md";
+import { useAuthStore } from "../store/authStore"; // 1. Import your store
 
 function Header() {
   const location = useLocation();
+  const navigate = useNavigate();
+  
+  // 2. Pull user and logout from store
+  const { user, logout } = useAuthStore();
 
-  // Map your routes to titles
-  const getTitle = (path: any) => {
+  const getTitle = (path: string) => {
     switch (path) {
       case "/": return "Main Dashboard";
       case "/vehicles": return "Vehicle Registry";
@@ -19,48 +23,44 @@ function Header() {
     }
   };
 
+  console.log("user>>", user)
+
+  // 3. Helper to get initials (e.g., "John Doe" -> "JD")
+  const getInitials = (name: string) => {
+    return name
+      ?.split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .substring(0, 2) || "??";
+  };
+
+  // 4. Handle Logout
+  const handleLogout = () => {
+    logout();
+    navigate("/login"); // Optional: ProtectedRoute usually handles this, but explicit is fine
+  };
+
   return (
-    <nav className="navbar w-full sticky top-0 z-2 backdrop-blur bg-base-100/90">
+    <nav className="navbar w-full sticky top-0 z-[10] backdrop-blur bg-base-100/90 border-b border-base-200">
+      {/* Drawer Toggle (Desktop) */}
       <label
         htmlFor="my-drawer-4"
-        aria-label="open sidebar"
-        className="btn btn-square btn-ghost"
+        className="btn btn-square btn-ghost hidden lg:inline-flex"
       >
-        {/* Sidebar toggle icon */}
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          strokeLinejoin="round"
-          strokeLinecap="round"
-          strokeWidth="2"
-          fill="none"
-          stroke="currentColor"
-          className="my-1.5 inline-block size-4"
-        >
-          <path d="M4 4m0 2a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2z"></path>
-          <path d="M9 4v16"></path>
-          <path d="M14 10l2 2l-2 2"></path>
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-6 h-6">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
         </svg>
       </label>
-      <div className="flex-1 flex items-center gap-2">
+
+      <div className="flex-1">
+        {/* Mobile Toggle */}
         <label
           htmlFor="my-drawer-4"
-          aria-label="open sidebar"
           className="btn btn-square btn-ghost lg:hidden"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            strokeLinejoin="round"
-            strokeLinecap="round"
-            strokeWidth="2"
-            fill="none"
-            stroke="currentColor"
-            className="size-5"
-          >
-            <path d="M4 4m0 2a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2z"></path>
-            <path d="M9 4v16"></path>
-            <path d="M14 10l2 2l-2 2"></path>
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-5 h-5">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
           </svg>
         </label>
         
@@ -74,10 +74,11 @@ function Header() {
           <div 
             tabIndex={0} 
             role="button" 
-            className="btn btn-ghost btn-circle avatar border-2 border-blue-100"
+            className="btn btn-ghost btn-circle avatar border-2 border-primary/20"
           >
-            <div className="w-10 rounded-full bg-blue-600 text-white flex items-center justify-center">
-              <span className="text-xs font-bold">JD</span>
+            <div className="w-10 rounded-full bg-primary text-primary-content flex items-center justify-center">
+              {/* 5. Dynamic Initials */}
+              <span className="text-xs font-bold">{getInitials(user?.name || "User")}</span>
             </div>
           </div>
           
@@ -86,8 +87,11 @@ function Header() {
             className="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow-xl bg-base-100 rounded-box w-52 border border-base-200"
           >
             <div className="px-4 py-2 border-b border-base-100 mb-2">
-              <p className="font-bold text-sm">James Decker</p>
-              <p className="text-[10px] text-slate-500 uppercase">Fleet Manager</p>
+              {/* 6. Dynamic Name and Role */}
+              <p className="font-bold text-sm truncate">{user?.name || "Guest User"}</p>
+              <p className="text-[10px] text-slate-500 uppercase tracking-tighter">
+                {user?.role?.replace("ROLE_", "") || "Unauthorized"}
+              </p>
             </div>
             <li>
               <a className="flex justify-between">
@@ -99,7 +103,11 @@ function Header() {
             </li>
             <hr className="my-1 opacity-50" />
             <li>
-              <button className="text-error hover:bg-error/10">
+              {/* 7. Logout Trigger */}
+              <button 
+                onClick={handleLogout}
+                className="text-error hover:bg-error/10 flex justify-between"
+              >
                 Logout <MdLogout size={18} />
               </button>
             </li>

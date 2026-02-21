@@ -35,7 +35,7 @@ const VerifyEmailPage: React.FC = () => {
               <div className="text-success text-5xl mb-4">✓</div>
               <h2 className="text-2xl font-bold">Verified!</h2>
               <p>Your email has been confirmed. You can now access the dashboard.</p>
-              <button className="btn btn-primary mt-6" onClick={() => navigate('/dashboard')}>
+              <button className="btn btn-primary mt-6" onClick={() => navigate('/')}>
                 Go to Dashboard
               </button>
             </>

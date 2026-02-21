@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -35,6 +36,12 @@ public class AuthController {
             responseDTO.setServiceResult(authService.signup(signupDTO));
             responseDTO.setMessage("User signed up successfully");
             responseDTO.setSuccess(1);
+        } catch(AuthenticationException e) {
+            e.printStackTrace();
+            responseDTO.setServiceResult(e.getMessage());
+            responseDTO.setMessage(e.getMessage());
+            responseDTO.setSuccess(0);
+            return new ResponseEntity<>(responseDTO, HttpStatusCode.valueOf(400));
         } catch (Exception e) {
             e.printStackTrace();
             responseDTO.setServiceResult("Failed to create user");
@@ -147,6 +154,36 @@ public class AuthController {
         }
 
         System.out.println("Exiting from AuthController -> verifyEmail");
+        return ResponseEntity.ok(responseDTO);
+    }
+
+    @PatchMapping(value = "/dispatcher/updateDriver/availability")
+    public ResponseEntity<ResponseDTO> updateDriverAvailability(@RequestParam(required = true) String email, @RequestParam(required = true) boolean isAvailable) {
+        System.out.println("Entering into AuthController -> updateDriverAvailability");
+
+        ResponseDTO responseDTO = new ResponseDTO();
+
+        try {
+            authService.updateDriverAvailability(email, isAvailable);
+            responseDTO.setServiceResult("Driver availability updated successfully");
+            responseDTO.setMessage("Driver availability updated successfully");
+            responseDTO.setSuccess(1);
+        } catch (ResourceNotFoundExcepiton e) {
+            e.printStackTrace();
+            responseDTO.setServiceResult(e.getMessage());
+            responseDTO.setMessage(e.getMessage());
+            responseDTO.setSuccess(0);
+            return new ResponseEntity<>(responseDTO, HttpStatusCode.valueOf(404));
+        } catch (Exception e) {
+            e.printStackTrace();
+            responseDTO.setServiceResult("Failed to update driver availability");
+            responseDTO.setMessage("Failed to update driver availability");
+            responseDTO.setSuccess(0);
+
+            return new ResponseEntity<>(responseDTO, HttpStatusCode.valueOf(500));
+        }
+
+        System.out.println("Exiting from AuthController -> updateDriverAvailability");
         return ResponseEntity.ok(responseDTO);
     }
 }

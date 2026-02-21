@@ -14,9 +14,9 @@ import com.FleetFlow.dto.ResponseDTO;
 import com.FleetFlow.dto.VehicleDTO;
 import com.FleetFlow.service.VehicleCommandService;
 
-@CrossOrigin
+@CrossOrigin(origins = "*", allowedHeaders = "*")
 @RestController
-@RequestMapping("/api/vehicle")
+@RequestMapping("/api/vehicle/command")
 public class VehicleCommandController {
 
 	@Autowired

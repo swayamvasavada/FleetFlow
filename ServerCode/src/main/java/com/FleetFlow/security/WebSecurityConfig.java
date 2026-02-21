@@ -1,5 +1,6 @@
 package com.FleetFlow.security;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -9,15 +10,20 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @Configuration
 public class WebSecurityConfig {
-    @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
-        return httpSecurity
-                .csrf(csrf -> csrf.disable())
-                .sessionManagement(
-                        sessionConfig -> sessionConfig.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(
-                        auth -> auth.requestMatchers("/api/auth/**").permitAll().requestMatchers("/api/vehicle/**")
-                                .hasAnyRole("MANAGER", "DISPATCHER"))
-                .addFilterBefore(new AuthFilter(), UsernamePasswordAuthenticationFilter.class).build();
-    }
+        @Autowired
+        private AuthFilter authFilter;
+
+        @Bean
+        public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
+                return httpSecurity
+                                .csrf(csrf -> csrf.disable())
+                                .sessionManagement(
+                                                sessionConfig -> sessionConfig
+                                                                .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                                .authorizeHttpRequests(
+                                                auth -> auth.requestMatchers("/api/auth/**").permitAll()
+                                                                .requestMatchers("/api/vehicle/**")
+                                                                .hasAnyRole("MANAGER", "DISPATCHER"))
+                                .addFilterBefore(authFilter, UsernamePasswordAuthenticationFilter.class).build();
+        }
 }

@@ -1,8 +1,22 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { MdDashboard, MdDirectionsBus, MdPayments, MdSettings, MdPerson, MdBarChart } from 'react-icons/md';
+import { useAuthStore } from "../store/authStore"; // 1. Import your store
 
 function Sidebar() {
+  // 2. Access the user object from Zustand
+  const { user } = useAuthStore();
+
+  // 3. Helper to get initials (e.g., "Nabin Shrestha" -> "NS")
+  const getInitials = (name: string) => {
+    return name
+      ?.split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .substring(0, 2) || "??";
+  };
+
   const menuItems = [
     { label: "Dashboard", icon: MdDashboard, path: "/" },
     { label: "Vehicle Registry", icon: MdDirectionsBus, path: "/vehicles" },
@@ -19,9 +33,6 @@ function Sidebar() {
         className="drawer-overlay"
       ></label>
       
-      {/* Added 'transition-all duration-300' to the main container 
-         to animate the width change (14 to 64) 
-      */}
       <div className="flex min-h-full flex-col items-start bg-[#1a365d] text-slate-300 border-r border-slate-800 transition-all duration-300 ease-in-out is-drawer-close:w-16 is-drawer-open:w-64">
         
         {/* Logo Area */}
@@ -43,10 +54,6 @@ function Sidebar() {
             <li key={item.label} className="w-full">
               <Link to={item.path} className="flex items-center gap-4 hover:bg-slate-800 py-3">
                 <item.icon size={22} className="shrink-0" />
-                {/* TEXT ANIMATION LOGIC:
-                   We use whitespace-nowrap to prevent text wrapping during the slide.
-                   We transition opacity and width.
-                */}
                 <span className="whitespace-nowrap transition-all duration-300 ease-in-out overflow-hidden is-drawer-close:opacity-0 is-drawer-close:w-0 is-drawer-open:opacity-100 is-drawer-open:w-auto">
                   {item.label}
                 </span>
@@ -75,14 +82,22 @@ function Sidebar() {
           </li>
         </ul>
 
-        {/* User Footer */}
+        {/* User Footer - Now Dynamic */}
         <div className="p-4 border-t border-slate-800 w-full overflow-hidden">
           <div className="flex items-center gap-3 px-1">
-            <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-xs font-bold text-white shrink-0">
-              JD
+            <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-[10px] font-bold text-white shrink-0">
+              {/* 4. Display Initials */}
+              {getInitials(user?.name || "User")}
             </div>
             <div className="text-xs transition-all duration-300 overflow-hidden is-drawer-close:opacity-0 is-drawer-close:w-0 is-drawer-open:opacity-100 is-drawer-open:w-auto">
-              <p className="font-bold text-white whitespace-nowrap">James Decker</p>
+              {/* 5. Display Full Name */}
+              <p className="font-bold text-white whitespace-nowrap">
+                {user?.name || "Guest User"}
+              </p>
+              {/* 6. Optional: Add the role under the name */}
+              <p className="text-[10px] text-slate-500 whitespace-nowrap truncate uppercase">
+                {user?.role?.replace("ROLE_", "")}
+              </p>
             </div>
           </div>
         </div>

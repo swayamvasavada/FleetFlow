@@ -79,8 +79,6 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({ isLoading: true, error: null });
     try {
       const response = await api.post(loginPath, credentials);
-      
-      // FIX: Extract from serviceResult as per your console logs
       const { serviceResult } = response.data;
       
       if (serviceResult) {
@@ -90,7 +88,7 @@ export const useAuthStore = create<AuthState>((set) => ({
         localStorage.setItem("user", JSON.stringify(userData));
 
         set({
-          user: userData,
+          user: userData, // userData now contains the 'role' key from the API
           token: token,
           isLoading: false,
         });

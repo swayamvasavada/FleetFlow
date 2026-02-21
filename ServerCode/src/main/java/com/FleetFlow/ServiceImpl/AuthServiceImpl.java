@@ -46,6 +46,9 @@ public class AuthServiceImpl implements AuthService {
     public SignupDTO signup(SignupDTO signupDTO) throws Exception {
         User user = new User();
 
+        boolean isEmailExist = userDAO.existsByEmail(signupDTO.getEmail());
+        if (isEmailExist) throw new AuthenticationException("User already exists with given email");
+        
         BeanUtils.copyProperties(signupDTO, user);
         user.setPassword(passwordEncoder.encode(signupDTO.getPassword()));
         user.setIsVerified(false);
@@ -68,7 +71,7 @@ public class AuthServiceImpl implements AuthService {
         
         Context context = new Context();
         context.setVariable("name", user.getUsername());
-        context.setVariable("verificationUrl", verificationUrl);
+        context.setVariable("verificationUrl", frontendBaseUrl.concat(verificationUrl));
 
         String htmlContent = templateEngine.process("fleetflow-welcome", context);
         emailUtil.sendHtmlEmail(email, "Welcome to Our Platform", htmlContent);
@@ -82,14 +85,17 @@ public class AuthServiceImpl implements AuthService {
         if (!user.getIsVerified()) {
             loginDTO.setPassword(null);
             loginDTO.setIsVerified(false);
-            return null;
+            return loginDTO;
         }
         
         boolean isPasswordMatch = passwordEncoder.matches(loginDTO.getPassword(), user.getPassword());
         if (!isPasswordMatch) throw new AuthenticationException("Entered password is incorrect!");
 
+        String token = jwtUtil.generateToken(user.getEmail(), Long.valueOf(24 * 60 * 60 * 1000));
         loginDTO.setPassword(null);
         loginDTO.setName(user.getName());
+        loginDTO.setToken(token);
+        loginDTO.setIsVerified(true);
         return loginDTO;
     }
 }

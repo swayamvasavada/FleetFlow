@@ -16,8 +16,8 @@ public class WebSecurityConfig {
                 .sessionManagement(
                         sessionConfig -> sessionConfig.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(
-                        auth -> auth.requestMatchers("/api/auth/**").permitAll().requestMatchers("/api/user/**")
-                                .hasRole("USER").requestMatchers("/api/admin/**").hasRole("ADMIN"))
+                        auth -> auth.requestMatchers("/api/auth/**").permitAll().requestMatchers("/api/vehicle/**")
+                                .hasAnyRole("MANAGER", "DISPATCHER"))
                 .addFilterBefore(new AuthFilter(), UsernamePasswordAuthenticationFilter.class).build();
     }
 }

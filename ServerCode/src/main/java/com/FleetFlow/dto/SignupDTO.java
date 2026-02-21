@@ -13,5 +13,6 @@ public class SignupDTO {
     private String name;
     private String email;
     private String password;
+    private String phoneNo;
     private Role role;
 }

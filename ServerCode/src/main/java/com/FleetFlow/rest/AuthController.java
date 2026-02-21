@@ -119,4 +119,34 @@ public class AuthController {
         System.out.println("Exiting from AuthController -> login");
         return ResponseEntity.ok(responseDTO);
     }
+
+    @PostMapping(value = "/verify")
+    public ResponseEntity<ResponseDTO> verifyUser(@RequestParam(required = true) String token) {
+        System.out.println("Entering into AuthController -> verifyUser");
+
+        ResponseDTO responseDTO = new ResponseDTO();
+
+        try {
+            authService.verifyUser(token);
+            responseDTO.setServiceResult("User verified successfully");
+            responseDTO.setMessage("User verified successfully");
+            responseDTO.setSuccess(1);
+        } catch (ResourceNotFoundExcepiton e) {
+            e.printStackTrace();
+            responseDTO.setServiceResult(e.getMessage());
+            responseDTO.setMessage(e.getMessage());
+            responseDTO.setSuccess(0);
+            return new ResponseEntity<>(responseDTO, HttpStatusCode.valueOf(404));
+        } catch (Exception e) {
+            e.printStackTrace();
+            responseDTO.setServiceResult("Failed to verify user");
+            responseDTO.setMessage("Failed to verify user");
+            responseDTO.setSuccess(0);
+
+            return new ResponseEntity<>(responseDTO, HttpStatusCode.valueOf(500));
+        }
+
+        System.out.println("Exiting from AuthController -> verifyEmail");
+        return ResponseEntity.ok(responseDTO);
+    }
 }

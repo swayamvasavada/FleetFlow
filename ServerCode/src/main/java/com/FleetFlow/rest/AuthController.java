@@ -3,6 +3,7 @@ package com.FleetFlow.rest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -17,6 +18,7 @@ import com.FleetFlow.exception.AuthenticationException;
 import com.FleetFlow.exception.ResourceNotFoundExcepiton;
 import com.FleetFlow.service.AuthService;
 
+@CrossOrigin(origins = "*", allowedHeaders = "*")
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
@@ -115,6 +117,36 @@ public class AuthController {
         }
 
         System.out.println("Exiting from AuthController -> login");
+        return ResponseEntity.ok(responseDTO);
+    }
+
+    @PostMapping(value = "/verify")
+    public ResponseEntity<ResponseDTO> verifyUser(@RequestParam(required = true) String token) {
+        System.out.println("Entering into AuthController -> verifyUser");
+
+        ResponseDTO responseDTO = new ResponseDTO();
+
+        try {
+            authService.verifyUser(token);
+            responseDTO.setServiceResult("User verified successfully");
+            responseDTO.setMessage("User verified successfully");
+            responseDTO.setSuccess(1);
+        } catch (ResourceNotFoundExcepiton e) {
+            e.printStackTrace();
+            responseDTO.setServiceResult(e.getMessage());
+            responseDTO.setMessage(e.getMessage());
+            responseDTO.setSuccess(0);
+            return new ResponseEntity<>(responseDTO, HttpStatusCode.valueOf(404));
+        } catch (Exception e) {
+            e.printStackTrace();
+            responseDTO.setServiceResult("Failed to verify user");
+            responseDTO.setMessage("Failed to verify user");
+            responseDTO.setSuccess(0);
+
+            return new ResponseEntity<>(responseDTO, HttpStatusCode.valueOf(500));
+        }
+
+        System.out.println("Exiting from AuthController -> verifyEmail");
         return ResponseEntity.ok(responseDTO);
     }
 }

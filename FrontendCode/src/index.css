@@ -1,2 +1,18 @@
 @import "tailwindcss";
 @plugin "daisyui";
+
+
+@theme {
+  /* This defines your "Industrial Blue" and "Freight Orange" */
+  --color-industrial: #1A365D;
+  --color-freight: #F6AD55;
+  
+  /* You can also adjust border radius to match your sketch */
+  --radius-xl: 1.5rem;
+}
+
+/* Force daisyUI to stay on the light theme for a clean look */
+[data-theme="light"] {
+  --color-primary: var(--color-industrial);
+  --color-secondary: var(--color-freight);
+}

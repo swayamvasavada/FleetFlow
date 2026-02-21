@@ -9,4 +9,6 @@ public interface AuthService {
     void sendVerificationMail(String email) throws Exception;
 
     LoginDTO login(LoginDTO loginDTO) throws Exception;
+
+    LoginDTO verifyUser(String token) throws Exception;
 }

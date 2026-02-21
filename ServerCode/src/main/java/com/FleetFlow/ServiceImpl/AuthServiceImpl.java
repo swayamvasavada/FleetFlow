@@ -29,7 +29,7 @@ public class AuthServiceImpl implements AuthService {
 
     @Autowired
     private SpringTemplateEngine templateEngine;
-    
+
     @Autowired
     private EmailUtil emailUtil;
 
@@ -47,8 +47,9 @@ public class AuthServiceImpl implements AuthService {
         User user = new User();
 
         boolean isEmailExist = userDAO.existsByEmail(signupDTO.getEmail());
-        if (isEmailExist) throw new AuthenticationException("User already exists with given email");
-        
+        if (isEmailExist)
+            throw new AuthenticationException("User already exists with given email");
+
         BeanUtils.copyProperties(signupDTO, user);
         user.setPassword(passwordEncoder.encode(signupDTO.getPassword()));
         user.setIsVerified(false);
@@ -57,18 +58,19 @@ public class AuthServiceImpl implements AuthService {
         userDAO.save(user);
 
         sendVerificationMail(signupDTO.getEmail());
-        
+
         return signupDTO;
     }
 
     @Override
     public void sendVerificationMail(String email) throws Exception {
         User user = userDAO.findByEmailAndActive(email, true);
-        if (user == null) throw new ResourceNotFoundExcepiton("User not found with given email");
+        if (user == null)
+            throw new ResourceNotFoundExcepiton("User not found with given email");
 
         String verificationToken = jwtUtil.generateToken(email, Long.valueOf(15 * 60 * 1000));
         String verificationUrl = new String("/user/verify/").concat(verificationToken);
-        
+
         Context context = new Context();
         context.setVariable("name", user.getUsername());
         context.setVariable("verificationUrl", frontendBaseUrl.concat(verificationUrl));
@@ -80,22 +82,42 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public LoginDTO login(LoginDTO loginDTO) throws Exception {
         User user = userDAO.findByEmailAndActive(loginDTO.getEmail(), true);
-        if (user == null) throw new ResourceNotFoundExcepiton("User not found with given email");
+        if (user == null)
+            throw new ResourceNotFoundExcepiton("User not found with given email");
 
         if (!user.getIsVerified()) {
             loginDTO.setPassword(null);
             loginDTO.setIsVerified(false);
             return loginDTO;
         }
-        
+
         boolean isPasswordMatch = passwordEncoder.matches(loginDTO.getPassword(), user.getPassword());
-        if (!isPasswordMatch) throw new AuthenticationException("Entered password is incorrect!");
+        if (!isPasswordMatch)
+            throw new AuthenticationException("Entered password is incorrect!");
 
         String token = jwtUtil.generateToken(user.getEmail(), Long.valueOf(24 * 60 * 60 * 1000));
         loginDTO.setPassword(null);
         loginDTO.setName(user.getName());
         loginDTO.setToken(token);
         loginDTO.setIsVerified(true);
+        return loginDTO;
+    }
+
+    @Override
+    public LoginDTO verifyUser(String token) throws Exception {
+        String email = jwtUtil.verifyToken(token);
+        User user = userDAO.findByEmailAndActive(email, true);
+        if (user == null)
+            throw new ResourceNotFoundExcepiton("User not found with given email");
+
+        if (!user.getIsVerified()) {
+            user.setIsVerified(true);
+            userDAO.save(user);
+        }
+        
+        LoginDTO loginDTO = new LoginDTO();
+        BeanUtils.copyProperties(user, loginDTO);
+        loginDTO.setPassword(null);
         return loginDTO;
     }
 }

@@ -36,12 +36,10 @@ public class Trip implements Serializable {
     @Column(name = "TripID")
     private Long tripID;
 
-    // ✅ Vehicle Mapping
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "VehicleID", nullable = false)
     private Vehicle vehicle;
 
-    // ✅ Driver Mapping (User with DRIVER role)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "DriverID", nullable = false)
     private User driver;

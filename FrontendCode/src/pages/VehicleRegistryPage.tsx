@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react';
-import { MdSearch, MdFilterList, MdAdd, MdClose } from 'react-icons/md';
-import { HiOutlineSortAscending, HiOutlineViewGrid } from 'react-icons/hi';
-import { useForm } from 'react-hook-form';
-import { apiStore } from '../store/apiStore'
+import React, { useEffect, useState } from "react";
+import { MdSearch, MdFilterList, MdAdd, MdClose } from "react-icons/md";
+import { HiOutlineSortAscending, HiOutlineViewGrid } from "react-icons/hi";
+import { useForm } from "react-hook-form";
+import { apiStore } from "../store/apiStore";
 
 interface VehicleFormData {
   licensePlate: string;
@@ -12,12 +12,11 @@ interface VehicleFormData {
   model: string;
   vehicleId: number;
   VehicleStatus: string;
-  isRetired: boolean
+  isRetired: boolean;
 }
 
 function VehicleRegistryPage() {
-
-  const { vehicles, loading, error, fetchAllVehicles } = apiStore();
+  const { vehicles, loading, error, fetchAllVehicles, addVehicle } = apiStore();
 
   useEffect(() => {
     fetchAllVehicles();
@@ -38,18 +37,30 @@ function VehicleRegistryPage() {
     }
   }, [openModal, reset]);
 
-  const onSubmit = (data: VehicleFormData) => {
-    const vehiclePayload = {
-      ...data,
-      createdAt: new Date().toISOString(),
-    };
-
-    console.log("Vehicle Payload:", vehiclePayload);
-    setOpenModal(false);
+  const onSubmit = async (data: VehicleFormData) => {
+  const vehiclePayload = {
+    licensePlate: data.licensePlate,
+    model: data.model,
+    vehicleType: data.vehicleType.toUpperCase(), // Match "MEDIUM" etc.
+    maxLoadCapacity: Number(data.maxLoadCapacity),
+    odometerReading: Number(data.odometerReading),
+    status: "AVAILABLE", // Default status for new vehicles
+    isRetired: false
   };
 
-  if (loading) return <div className="p-10 text-center text-xl font-bold">Loading vehicles...</div>;
-  if (error) return <div className="p-10 text-center text-red-500">Error: {error}</div>;
+  // Call the store action
+  await addVehicle(vehiclePayload);
+  setOpenModal(false);
+};
+
+  if (loading)
+    return (
+      <div className="p-10 text-center text-xl font-bold">
+        Loading vehicles...
+      </div>
+    );
+  if (error)
+    return <div className="p-10 text-center text-red-500">Error: {error}</div>;
 
   const labelStyle = "label text-primary text-sm mb-2 font-semibold";
   const inputBase = "input input-bordered w-full bg-base-100";
@@ -58,12 +69,15 @@ function VehicleRegistryPage() {
 
   return (
     <div className="min-h-screen bg-base-200 p-6 font-sans">
-
       <header className="flex flex-col gap-4 mb-8 md:flex-row md:items-center">
         <div className="form-control flex-1">
           <div className="input-group flex items-center bg-base-100 rounded-lg border border-base-300 px-3 shadow-sm focus-within:border-primary">
             <MdSearch size={22} className="text-base-content/50" />
-            <input type="text" placeholder="Search fleet..." className="input w-full focus:outline-none border-none bg-transparent" />
+            <input
+              type="text"
+              placeholder="Search fleet..."
+              className="input w-full focus:outline-none border-none bg-transparent"
+            />
           </div>
         </div>
 
@@ -84,7 +98,10 @@ function VehicleRegistryPage() {
 
       {/* Action Button - Placed according to your sketch */}
       <div className="flex justify-end mb-6">
-        <button className="btn btn-outline btn-primary gap-2 border-2 px-6" onClick={() => setOpenModal(true)}>
+        <button
+          className="btn btn-outline btn-primary gap-2 border-2 px-6"
+          onClick={() => setOpenModal(true)}
+        >
           <MdAdd size={22} /> New Vehicle
         </button>
       </div>
@@ -107,35 +124,41 @@ function VehicleRegistryPage() {
             </thead>
             <tbody className="text-base-content">
               {vehicles.map((vehicle) => (
-                <tr key={vehicle.licensePlate} className="hover:bg-gray-50">
+                // Use vehicleID from API as the key
+                <tr
+                  key={vehicle.vehicleId || vehicle.licensePlate}
+                  className="hover:bg-gray-50"
+                >
                   <td className="font-semibold">{vehicle.licensePlate}</td>
-
                   <td>{vehicle.model}</td>
-
                   <td>{vehicle.vehicleType}</td>
-
-                  <td>{vehicle.maxLoadCapacity}</td>
-
-                  <td className="text-sm">{vehicle.odometerReading}</td>
+                  <td>{vehicle.maxLoadCapacity} kg</td>
+                  <td className="text-sm">
+                    {vehicle.odometerReading?.toLocaleString()} km
+                  </td>
 
                   <td>
                     <span
                       className={`badge badge-md p-3 font-bold text-white
-            ${vehicle.VehicleStatus === "Idle"
-                          ? "bg-emerald-500"
-                          : vehicle.VehicleStatus === "On Trip"
-                            ? "bg-amber-500"
-                            : "bg-slate-400"
-                        }`}
+            ${
+              vehicle.status === "AVAILABLE" // Changed from VehicleStatus
+                ? "bg-emerald-500"
+                : vehicle.status === "MAINTENANCE"
+                  ? "bg-amber-500"
+                  : "bg-slate-400"
+            }`}
                     >
-                      {vehicle.VehicleStatus}
+                      {vehicle.status || "UNKNOWN"}
                     </span>
                   </td>
 
                   <td className="text-center">
-                    <button className="btn btn-ghost btn-xs text-orange-500 hover:bg-orange-50">
-                      <MdClose size={20} />
-                    </button>
+                    {/* If isRetired is true, maybe show a "Retired" label */}
+                    {vehicle.isRetired && (
+                      <span className="text-[10px] text-error font-bold block">
+                        RETIRED
+                      </span>
+                    )}
                   </td>
                 </tr>
               ))}
@@ -152,7 +175,6 @@ function VehicleRegistryPage() {
           </h3>
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-
             {/* License Plate */}
             <div className="form-control">
               <label className={labelStyle}>License Plate</label>
@@ -160,9 +182,13 @@ function VehicleRegistryPage() {
                 type="text"
                 placeholder="Enter license plate"
                 className={`${inputBase} ${errors.licensePlate && "input-error"}`}
-                {...register("licensePlate", { required: "License plate is required" })}
+                {...register("licensePlate", {
+                  required: "License plate is required",
+                })}
               />
-              {errors.licensePlate && <span className={errorText}>{errors.licensePlate.message}</span>}
+              {errors.licensePlate && (
+                <span className={errorText}>{errors.licensePlate.message}</span>
+              )}
             </div>
 
             {/* Max Payload */}
@@ -174,10 +200,14 @@ function VehicleRegistryPage() {
                 className={`${inputBase} ${errors.maxLoadCapacity && "input-error"}`}
                 {...register("maxLoadCapacity", {
                   required: "Max payload is required",
-                  min: { value: 1, message: "Payload must be positive" }
+                  min: { value: 1, message: "Payload must be positive" },
                 })}
               />
-              {errors.maxLoadCapacity && <span className={errorText}>{errors.maxLoadCapacity.message}</span>}
+              {errors.maxLoadCapacity && (
+                <span className={errorText}>
+                  {errors.maxLoadCapacity.message}
+                </span>
+              )}
             </div>
 
             {/* Initial Odometer */}
@@ -189,10 +219,14 @@ function VehicleRegistryPage() {
                 className={`${inputBase} ${errors.odometerReading && "input-error"}`}
                 {...register("odometerReading", {
                   required: "Odometer is required",
-                  min: { value: 0, message: "Cannot be negative" }
+                  min: { value: 0, message: "Cannot be negative" },
                 })}
               />
-              {errors.odometerReading && <span className={errorText}>{errors.odometerReading.message}</span>}
+              {errors.odometerReading && (
+                <span className={errorText}>
+                  {errors.odometerReading.message}
+                </span>
+              )}
             </div>
 
             {/* Type */}
@@ -207,7 +241,9 @@ function VehicleRegistryPage() {
                 <option>Van</option>
                 <option>Trailer</option>
               </select>
-              {errors.vehicleType && <span className={errorText}>{errors.vehicleType.message}</span>}
+              {errors.vehicleType && (
+                <span className={errorText}>{errors.vehicleType.message}</span>
+              )}
             </div>
 
             {/* Model */}
@@ -219,7 +255,9 @@ function VehicleRegistryPage() {
                 className={`${inputBase} ${errors.model && "input-error"}`}
                 {...register("model", { required: "Model is required" })}
               />
-              {errors.model && <span className={errorText}>{errors.model.message}</span>}
+              {errors.model && (
+                <span className={errorText}>{errors.model.message}</span>
+              )}
             </div>
 
             {/* Actions */}
@@ -236,7 +274,6 @@ function VehicleRegistryPage() {
                 Save Vehicle
               </button>
             </div>
-
           </form>
         </div>
       </dialog>
